@@ -5,34 +5,19 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@shared/lib/utils';
 import { Button } from '@shared/ui';
 import { useIsMobile } from '@shared/hooks';
-import type { DishCategory, DishFilters } from '@features/dish';
+import type { Category, Difficulty, DishFilters } from '@features/dish';
 
 interface FilterSheetProps {
   filters: DishFilters;
   onApply: (filters: DishFilters) => void;
+  categories?: Category[];
   className?: string;
 }
 
-const CATEGORIES: { value: DishCategory; label: string }[] = [
-  { value: 'com', label: 'Cơm' },
-  { value: 'bun_pho', label: 'Bún/Phở' },
-  { value: 'lau', label: 'Lẩu' },
-  { value: 'xao', label: 'Xào' },
-  { value: 'nuong', label: 'Nướng' },
-  { value: 'chien', label: 'Chiên' },
-  { value: 'hap', label: 'Hấp' },
-  { value: 'soup', label: 'Canh/Súp' },
-  { value: 'salad', label: 'Salad' },
-  { value: 'do_uong', label: 'Đồ uống' },
-  { value: 'trang_mieng', label: 'Tráng miệng' },
-];
-
-const DIFFICULTIES: { value: number; label: string }[] = [
-  { value: 1, label: 'Rất dễ' },
-  { value: 2, label: 'Dễ' },
-  { value: 3, label: 'Trung bình' },
-  { value: 4, label: 'Khó' },
-  { value: 5, label: 'Rất khó' },
+const DIFFICULTIES: { value: Difficulty; label: string }[] = [
+  { value: 'EASY', label: 'Dễ' },
+  { value: 'MEDIUM', label: 'Trung bình' },
+  { value: 'HARD', label: 'Khó' },
 ];
 
 const COOK_TIMES: { value: number; label: string }[] = [
@@ -44,17 +29,19 @@ const COOK_TIMES: { value: number; label: string }[] = [
 
 function countActiveFilters(filters: DishFilters): number {
   let count = 0;
-  if (filters.category) count++;
-  if (filters.difficulty !== undefined) count++;
-  if (filters.maxTime !== undefined) count++;
+  if (filters.dishType) count++;
+  if (filters.difficulty) count++;
+  if (filters.maxCookTime !== undefined) count++;
   return count;
 }
 
-export function FilterSheet({ filters, onApply, className }: FilterSheetProps) {
+export function FilterSheet({ filters, onApply, categories = [], className }: FilterSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState<DishFilters>(filters);
   const isMobile = useIsMobile();
   const activeCount = countActiveFilters(filters);
+
+  const dishTypeCategories = categories.filter((c) => c.type === 'DISH_TYPE');
 
   const handleOpen = useCallback(() => {
     setDraft(filters);
@@ -140,33 +127,36 @@ export function FilterSheet({ filters, onApply, className }: FilterSheetProps) {
 
                 <h3 className="mb-6 text-lg font-bold text-gray-900 dark:text-gray-100">Bộ lọc</h3>
 
-                {/* Category */}
-                <div className="mb-6">
-                  <h4 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Loại món
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {CATEGORIES.map((cat) => (
-                      <button
-                        key={cat.value}
-                        onClick={() =>
-                          setDraft((prev) => ({
-                            ...prev,
-                            category: prev.category === cat.value ? undefined : cat.value,
-                          }))
-                        }
-                        className={cn(
-                          'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                          draft.category === cat.value
-                            ? 'bg-primary text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300',
-                        )}
-                      >
-                        {cat.label}
-                      </button>
-                    ))}
+                {/* Dish type */}
+                {dishTypeCategories.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Loại món
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {dishTypeCategories.map((cat) => (
+                        <button
+                          key={cat.id}
+                          onClick={() =>
+                            setDraft((prev) => ({
+                              ...prev,
+                              dishType: prev.dishType === cat.id ? undefined : cat.id,
+                            }))
+                          }
+                          aria-pressed={draft.dishType === cat.id}
+                          className={cn(
+                            'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                            draft.dishType === cat.id
+                              ? 'bg-primary text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300',
+                          )}
+                        >
+                          {cat.name}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Difficulty */}
                 <div className="mb-6">
@@ -208,12 +198,13 @@ export function FilterSheet({ filters, onApply, className }: FilterSheetProps) {
                         onClick={() =>
                           setDraft((prev) => ({
                             ...prev,
-                            maxTime: prev.maxTime === ct.value ? undefined : ct.value,
+                            maxCookTime: prev.maxCookTime === ct.value ? undefined : ct.value,
                           }))
                         }
+                        aria-pressed={draft.maxCookTime === ct.value}
                         className={cn(
                           'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                          draft.maxTime === ct.value
+                          draft.maxCookTime === ct.value
                             ? 'bg-primary text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300',
                         )}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { cn } from '@shared/lib/utils';
 import type { Dish } from '../types';
+import { getTotalTime } from '../types';
 import { DishBadge } from './DishBadge';
 
 type DishCardVariant = 'default' | 'compact' | 'overlay';
@@ -31,7 +32,7 @@ function ImagePlaceholder({ className }: { className?: string }) {
 }
 
 function DishImage({ dish, className }: { dish: Dish; className?: string }) {
-  const src = dish.thumbnail ?? dish.imageUrl;
+  const src = dish.imageUrl;
 
   if (!src) {
     return <ImagePlaceholder className={className} />;
@@ -51,7 +52,7 @@ function DishImage({ dish, className }: { dish: Dish; className?: string }) {
 }
 
 function DefaultCard({ dish }: { dish: Dish }) {
-  const totalTime = (dish.prepTime ?? 0) + (dish.cookTime ?? 0) || null;
+  const totalTime = getTotalTime(dish);
 
   return (
     <>
@@ -62,8 +63,7 @@ function DefaultCard({ dish }: { dish: Dish }) {
         </h3>
         <div className="flex flex-wrap gap-1.5">
           <DishBadge type="time" value={totalTime} />
-          <DishBadge type="difficulty" value={dish.difficulty} />
-          <DishBadge type="spice" value={dish.spiceLevel} />
+          <DishBadge type="difficulty" value={dish.difficulty ?? null} />
         </div>
       </div>
     </>
@@ -71,7 +71,7 @@ function DefaultCard({ dish }: { dish: Dish }) {
 }
 
 function CompactCard({ dish }: { dish: Dish }) {
-  const totalTime = (dish.prepTime ?? 0) + (dish.cookTime ?? 0) || null;
+  const totalTime = getTotalTime(dish);
 
   return (
     <div className="flex items-center gap-3 p-2">
@@ -82,7 +82,7 @@ function CompactCard({ dish }: { dish: Dish }) {
         </h3>
         <div className="flex gap-1.5">
           <DishBadge type="time" value={totalTime} />
-          <DishBadge type="difficulty" value={dish.difficulty} />
+          <DishBadge type="difficulty" value={dish.difficulty ?? null} />
         </div>
       </div>
     </div>
@@ -90,7 +90,7 @@ function CompactCard({ dish }: { dish: Dish }) {
 }
 
 function OverlayCard({ dish }: { dish: Dish }) {
-  const totalTime = (dish.prepTime ?? 0) + (dish.cookTime ?? 0) || null;
+  const totalTime = getTotalTime(dish);
 
   return (
     <div className="relative">
@@ -100,7 +100,7 @@ function OverlayCard({ dish }: { dish: Dish }) {
         <h3 className="mb-1.5 line-clamp-2 text-sm font-semibold text-white">{dish.name}</h3>
         <div className="flex gap-1.5">
           <DishBadge type="time" value={totalTime} />
-          <DishBadge type="difficulty" value={dish.difficulty} />
+          <DishBadge type="difficulty" value={dish.difficulty ?? null} />
         </div>
       </div>
     </div>

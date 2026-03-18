@@ -1,18 +1,12 @@
----
-name: code-review
-description: Review code changes for best practices (SOLID, DRY, a11y, security), run all lint and CI tools, and report findings with actionable fixes.
-allowed-tools: Bash, Read, Grep, Glob, Agent
----
+# FE Code Review
 
-# Code Review
+Review the current Next.js frontend code changes for quality, best practices, and CI compliance.
 
-Review the current code changes for quality, best practices, and CI compliance.
-
-If `$ARGUMENTS` is provided, focus the review on those files or directories. Otherwise, review all uncommitted changes (`git diff` + `git diff --cached`).
+If `$ARGUMENTS` is provided, focus the review on those files or directories. Otherwise, review all uncommitted changes in the `FE/` directory (`git diff -- FE/` + `git diff --cached -- FE/`).
 
 ## Step 1: Identify changes
 
-Run `git diff --name-only` and `git diff --cached --name-only` to list all modified files. If no git changes exist, review the files specified in `$ARGUMENTS`.
+Run `git diff --name-only -- FE/` and `git diff --cached --name-only -- FE/` to list all modified files. If no git changes exist, review the files specified in `$ARGUMENTS`.
 
 ## Step 2: Run CI tools (all must pass)
 
@@ -78,20 +72,20 @@ Present findings as a structured report:
 
 ```
 ## CI Results
-- type-check: ✅/❌
-- lint: ✅/❌
-- format:check: ✅/❌
-- test: ✅/❌ (X passed, Y failed)
-- build: ✅/❌
+- type-check: PASS/FAIL
+- lint: PASS/FAIL
+- format:check: PASS/FAIL
+- test: PASS/FAIL (X passed, Y failed)
+- build: PASS/FAIL
 
 ## Issues Found
-### 🔴 Critical (must fix)
+### Critical (must fix)
 - [file:line] Description and suggested fix
 
-### 🟡 Warning (should fix)
+### Warning (should fix)
 - [file:line] Description and suggested fix
 
-### 💡 Suggestion (nice to have)
+### Suggestion (nice to have)
 - [file:line] Description
 
 ## Summary

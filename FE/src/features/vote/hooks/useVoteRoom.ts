@@ -25,10 +25,7 @@ interface UseVoteRoomReturn {
  * Generate mock VoteResult[] from room dishes, scored by vote data.
  * Works for all 3 vote types: tournament, swipe, ranking.
  */
-function generateMockResults(
-  room: VoteRoom,
-  voteData: Record<string, unknown>,
-): VoteResult[] {
+function generateMockResults(room: VoteRoom, voteData: Record<string, unknown>): VoteResult[] {
   const dishes = room.dishes;
   if (!dishes.length) return [];
 
@@ -53,7 +50,9 @@ function generateMockResults(
       .map((dish) => ({
         dishId: dish.id,
         dish,
-        score: likedIds.includes(dish.id) ? 50 + Math.floor(Math.random() * 50) : Math.floor(Math.random() * 30),
+        score: likedIds.includes(dish.id)
+          ? 50 + Math.floor(Math.random() * 50)
+          : Math.floor(Math.random() * 30),
         rank: 0,
       }))
       .sort((a, b) => b.score - a.score)

@@ -13,7 +13,7 @@ interface RecipePageProps {
 
 async function getDish(slug: string): Promise<DishDetail | null> {
   try {
-    return await apiClient.get<DishDetail>(`/api/dishes/${slug}`);
+    return await apiClient.get<DishDetail>(`/api/v1/recipes/${slug}`);
   } catch {
     return null;
   }
@@ -55,7 +55,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
         <section className="mt-8">
           <h2 className="mb-4 font-heading text-xl font-bold">Nguyên liệu</h2>
-          <IngredientList ingredients={dish.ingredients} originalServings={dish.servings} />
+          <IngredientList ingredients={dish.ingredients} originalServings={dish.servings ?? 4} />
         </section>
 
         <section className="mt-8">

@@ -1,12 +1,17 @@
 export type {
   Dish,
   DishDetail,
-  DishCategory,
+  Difficulty,
+  DishStatus,
+  Category,
+  CategoryType,
+  Tag,
   Ingredient,
   Step,
   DishFilters,
-  DishListResponse,
+  Pagination,
 } from './types';
+export { getTotalTime } from './types';
 export { DishCard } from './components/DishCard';
 export { DishBadge } from './components/DishBadge';
 export { DishTags } from './components/DishTags';

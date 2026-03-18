@@ -3,35 +3,16 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { cn } from '@shared/lib/utils';
-import type { DishCategory } from '@features/dish';
+import type { DishDetail } from '@features/dish';
 
 interface RecipeHeroProps {
-  dish: {
-    name: string;
-    imageUrl: string | null;
-    category: DishCategory;
-    difficulty: number;
-  };
+  dish: DishDetail;
   className?: string;
 }
 
-const categoryLabels: Partial<Record<DishCategory, string>> = {
-  com: 'Cơm',
-  bun_pho: 'Bún/Phở',
-  lau: 'Lẩu',
-  xao: 'Xào',
-  nuong: 'Nướng',
-  chien: 'Chiên',
-  hap: 'Hấp',
-  soup: 'Canh/Súp',
-  salad: 'Salad',
-  do_uong: 'Đồ uống',
-  trang_mieng: 'Tráng miệng',
-  other: 'Khác',
-};
-
 export function RecipeHero({ dish, className }: RecipeHeroProps) {
   const router = useRouter();
+  const categoryLabel = dish.dishType?.name;
 
   return (
     <section className={cn('relative aspect-[16/9] w-full', className)}>
@@ -71,9 +52,11 @@ export function RecipeHero({ dish, className }: RecipeHeroProps) {
       </button>
 
       <div className="absolute bottom-0 left-0 right-0 p-6">
-        <span className="mb-2 inline-block rounded-full bg-primary/90 px-3 py-1 text-xs font-medium text-white">
-          {categoryLabels[dish.category] ?? dish.category}
-        </span>
+        {categoryLabel && (
+          <span className="mb-2 inline-block rounded-full bg-primary/90 px-3 py-1 text-xs font-medium text-white">
+            {categoryLabel}
+          </span>
+        )}
         <h1 className="text-2xl font-bold text-white md:text-3xl">{dish.name}</h1>
       </div>
     </section>

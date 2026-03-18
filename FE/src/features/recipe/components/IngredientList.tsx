@@ -31,9 +31,7 @@ export function IngredientList({ ingredients, originalServings, className }: Ing
   return (
     <section className={cn('px-4 py-4', className)}>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-          Nguyên liệu
-        </h2>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Nguyên liệu</h2>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"

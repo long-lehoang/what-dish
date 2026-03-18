@@ -3,35 +3,20 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@shared/lib/utils';
-import type { DishCategory } from '@features/dish/types';
+import type { Category, Difficulty } from '@features/dish/types';
 import type { RandomFilters } from '../types';
 
 interface FilterBarProps {
   filters: RandomFilters;
   onFilterChange: (filters: RandomFilters) => void;
+  categories?: Category[];
   className?: string;
 }
 
-const CATEGORY_OPTIONS: { value: DishCategory; label: string; icon: string }[] = [
-  { value: 'com', label: 'Cơm', icon: '🍚' },
-  { value: 'bun_pho', label: 'Bún/Phở', icon: '🍜' },
-  { value: 'lau', label: 'Lẩu', icon: '🍲' },
-  { value: 'xao', label: 'Xào', icon: '🥘' },
-  { value: 'nuong', label: 'Nướng', icon: '🍖' },
-  { value: 'chien', label: 'Chiên', icon: '🍳' },
-  { value: 'hap', label: 'Hấp', icon: '🥟' },
-  { value: 'soup', label: 'Canh/Súp', icon: '🥣' },
-  { value: 'salad', label: 'Salad', icon: '🥗' },
-  { value: 'do_uong', label: 'Đồ uống', icon: '🧃' },
-  { value: 'trang_mieng', label: 'Tráng miệng', icon: '🍮' },
-];
-
-const DIFFICULTY_OPTIONS: { value: number; label: string }[] = [
-  { value: 1, label: 'Dễ' },
-  { value: 2, label: 'Dễ-TB' },
-  { value: 3, label: 'Trung bình' },
-  { value: 4, label: 'Khó' },
-  { value: 5, label: 'Rất khó' },
+const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
+  { value: 'EASY', label: 'Dễ' },
+  { value: 'MEDIUM', label: 'Trung bình' },
+  { value: 'HARD', label: 'Khó' },
 ];
 
 const TIME_OPTIONS: { value: number; label: string }[] = [
@@ -40,8 +25,6 @@ const TIME_OPTIONS: { value: number; label: string }[] = [
   { value: 60, label: '< 1 giờ' },
   { value: 120, label: '< 2 giờ' },
 ];
-
-const DIETARY_OPTIONS: string[] = ['Chay', 'Không gluten', 'Ít calo', 'Keto'];
 
 interface ChipProps {
   label: string;
@@ -72,33 +55,28 @@ function Chip({ label, icon, isActive, onClick }: ChipProps) {
 
 function activeFilterCount(filters: RandomFilters): number {
   let count = 0;
-  if (filters.category) count++;
+  if (filters.dishType) count++;
   if (filters.difficulty) count++;
-  if (filters.maxTime) count++;
-  if (filters.dietary?.length) count += filters.dietary.length;
+  if (filters.maxCookTime) count++;
   return count;
 }
 
-export function FilterBar({ filters, onFilterChange, className }: FilterBarProps) {
+export function FilterBar({ filters, onFilterChange, categories = [], className }: FilterBarProps) {
   const [expanded, setExpanded] = useState(false);
   const count = activeFilterCount(filters);
 
-  const toggleCategory = (cat: DishCategory) => {
-    onFilterChange({ ...filters, category: filters.category === cat ? undefined : cat });
+  const dishTypeCategories = categories.filter((c) => c.type === 'DISH_TYPE');
+
+  const toggleDishType = (id: string) => {
+    onFilterChange({ ...filters, dishType: filters.dishType === id ? undefined : id });
   };
 
-  const toggleDifficulty = (diff: number) => {
+  const toggleDifficulty = (diff: Difficulty) => {
     onFilterChange({ ...filters, difficulty: filters.difficulty === diff ? undefined : diff });
   };
 
   const toggleTime = (time: number) => {
-    onFilterChange({ ...filters, maxTime: filters.maxTime === time ? undefined : time });
-  };
-
-  const toggleDietary = (diet: string) => {
-    const current = filters.dietary ?? [];
-    const next = current.includes(diet) ? current.filter((d) => d !== diet) : [...current, diet];
-    onFilterChange({ ...filters, dietary: next.length > 0 ? next : undefined });
+    onFilterChange({ ...filters, maxCookTime: filters.maxCookTime === time ? undefined : time });
   };
 
   const clearAll = () => {
@@ -147,17 +125,18 @@ export function FilterBar({ filters, onFilterChange, className }: FilterBarProps
       </div>
 
       {/* Category row — always visible as horizontal scroll */}
-      <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
-        {CATEGORY_OPTIONS.map((opt) => (
-          <Chip
-            key={opt.value}
-            label={opt.label}
-            icon={opt.icon}
-            isActive={filters.category === opt.value}
-            onClick={() => toggleCategory(opt.value)}
-          />
-        ))}
-      </div>
+      {dishTypeCategories.length > 0 && (
+        <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
+          {dishTypeCategories.map((cat) => (
+            <Chip
+              key={cat.id}
+              label={cat.name}
+              isActive={filters.dishType === cat.id}
+              onClick={() => toggleDishType(cat.id)}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Expandable filters */}
       <AnimatePresence>
@@ -197,25 +176,8 @@ export function FilterBar({ filters, onFilterChange, className }: FilterBarProps
                     <Chip
                       key={`time-${opt.value}`}
                       label={opt.label}
-                      isActive={filters.maxTime === opt.value}
+                      isActive={filters.maxCookTime === opt.value}
                       onClick={() => toggleTime(opt.value)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Dietary */}
-              <div>
-                <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                  Chế độ ăn
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {DIETARY_OPTIONS.map((opt) => (
-                    <Chip
-                      key={`diet-${opt}`}
-                      label={opt}
-                      isActive={filters.dietary?.includes(opt) ?? false}
-                      onClick={() => toggleDietary(opt)}
                     />
                   ))}
                 </div>

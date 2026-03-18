@@ -16,7 +16,7 @@ export default function CookModePage() {
   useEffect(() => {
     async function fetchDish() {
       try {
-        const data = await apiClient.get<DishDetail>(`/api/dishes/${params.slug}`);
+        const data = await apiClient.get<DishDetail>(`/api/v1/recipes/${params.slug}`);
         setDish(data);
       } catch {
         router.push(`/dish/${params.slug}`);

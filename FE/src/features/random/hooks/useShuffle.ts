@@ -44,15 +44,14 @@ export function useShuffle(): UseShuffleReturn {
       const excludeIds = getExcludeIds();
       const params = new URLSearchParams();
 
-      if (filters?.category) params.set('category', filters.category);
-      if (filters?.difficulty) params.set('difficulty', String(filters.difficulty));
-      if (filters?.maxTime) params.set('maxTime', String(filters.maxTime));
-      if (filters?.tags?.length) params.set('tags', filters.tags.join(','));
-      if (filters?.dietary?.length) params.set('dietary', filters.dietary.join(','));
-      if (excludeIds.length > 0) params.set('exclude', excludeIds.join(','));
+      if (filters?.dishType) params.set('dish_type', filters.dishType);
+      if (filters?.difficulty) params.set('difficulty', filters.difficulty);
+      if (filters?.maxCookTime) params.set('max_cook_time', String(filters.maxCookTime));
+      if (filters?.tags) params.set('tags', filters.tags);
+      if (excludeIds.length > 0) params.set('exclude_ids', excludeIds.join(','));
 
       const queryString = params.toString();
-      const path = `/api/dishes/random${queryString ? `?${queryString}` : ''}`;
+      const path = `/api/v1/recipes/random${queryString ? `?${queryString}` : ''}`;
 
       const fetchPromise = apiClient.get<Dish>(path);
 

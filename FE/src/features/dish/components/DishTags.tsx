@@ -2,34 +2,25 @@
 
 import { Badge } from '@shared/ui';
 import { cn } from '@shared/lib/utils';
+import type { Tag } from '../types';
 
 interface DishTagsProps {
-  tags: string[];
-  dietary?: string[];
+  tags: Tag[];
   maxVisible?: number;
   className?: string;
 }
 
-export function DishTags({ tags, dietary = [], maxVisible = 3, className }: DishTagsProps) {
-  const allItems = [
-    ...dietary.map((d) => ({ label: d, isDietary: true })),
-    ...tags.map((t) => ({ label: t, isDietary: false })),
-  ];
+export function DishTags({ tags, maxVisible = 3, className }: DishTagsProps) {
+  const visible = tags.slice(0, maxVisible);
+  const overflowCount = tags.length - maxVisible;
 
-  const visible = allItems.slice(0, maxVisible);
-  const overflowCount = allItems.length - maxVisible;
-
-  if (allItems.length === 0) return null;
+  if (tags.length === 0) return null;
 
   return (
     <div className={cn('scrollbar-none flex items-center gap-1.5 overflow-x-auto', className)}>
-      {visible.map((item) => (
-        <Badge
-          key={item.label}
-          variant={item.isDietary ? 'success' : 'default'}
-          className="shrink-0 whitespace-nowrap"
-        >
-          {item.label}
+      {visible.map((tag) => (
+        <Badge key={tag.id} variant="default" className="shrink-0 whitespace-nowrap">
+          {tag.name}
         </Badge>
       ))}
       {overflowCount > 0 && (

@@ -46,17 +46,14 @@ function createMockDish(overrides?: Partial<Dish>): Dish {
     slug: 'pho-bo',
     description: 'Vietnamese beef noodle soup',
     imageUrl: 'https://example.com/pho.jpg',
-    thumbnail: null,
-    category: 'bun_pho',
-    difficulty: 2,
+    difficulty: 'MEDIUM',
     prepTime: 30,
     cookTime: 60,
+    totalTime: 90,
     servings: 4,
-    costMin: 30000,
-    costMax: 50000,
-    spiceLevel: 1,
-    tags: ['traditional', 'soup'],
-    dietary: [],
+    status: 'PUBLISHED',
+    viewCount: 0,
+    favoriteCount: 0,
     createdAt: '2024-01-01',
     updatedAt: '2024-01-01',
     ...overrides,
@@ -86,14 +83,8 @@ describe('DishCard', () => {
     expect(img).toHaveAttribute('src', 'https://example.com/pho.jpg');
   });
 
-  it('uses thumbnail over imageUrl when available', () => {
-    render(<DishCard dish={createMockDish({ thumbnail: 'https://example.com/thumb.jpg' })} />);
-    const img = screen.getByTestId('dish-image');
-    expect(img).toHaveAttribute('src', 'https://example.com/thumb.jpg');
-  });
-
   it('shows placeholder when no image', () => {
-    render(<DishCard dish={createMockDish({ imageUrl: null, thumbnail: null })} />);
+    render(<DishCard dish={createMockDish({ imageUrl: undefined })} />);
     expect(screen.queryByTestId('dish-image')).not.toBeInTheDocument();
   });
 

@@ -1,76 +1,100 @@
-export type DishCategory =
-  | 'com'
-  | 'bun_pho'
-  | 'lau'
-  | 'xao'
-  | 'nuong'
-  | 'chien'
-  | 'hap'
-  | 'soup'
-  | 'salad'
-  | 'do_uong'
-  | 'trang_mieng'
-  | 'other';
+// Types matching BE DTOs from internal/recipe/dto.go
 
-export interface Dish {
+export type { Pagination } from '@shared/lib/api-client';
+
+export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD';
+export type DishStatus = 'PUBLISHED' | 'DRAFT';
+export type CategoryType = 'DISH_TYPE' | 'REGION' | 'MAIN_INGREDIENT' | 'MEAL_TYPE';
+
+export interface Category {
   id: string;
   name: string;
   slug: string;
-  description: string | null;
-  imageUrl: string | null;
-  thumbnail: string | null;
-  category: DishCategory;
-  difficulty: 1 | 2 | 3 | 4 | 5;
-  prepTime: number | null;
-  cookTime: number | null;
-  servings: number;
-  costMin: number | null;
-  costMax: number | null;
-  spiceLevel: 0 | 1 | 2 | 3;
-  tags: string[];
-  dietary: string[];
+  type: CategoryType;
+  iconUrl?: string;
+  sortOrder: number;
+  isActive: boolean;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface Dish {
+  id: string;
+  externalId?: string;
+  name: string;
+  slug: string;
+  description?: string;
+  imageUrl?: string;
+  prepTime?: number;
+  cookTime?: number;
+  totalTime?: number;
+  servings?: number;
+  difficulty?: Difficulty;
+  status: DishStatus;
+  dishTypeId?: string;
+  regionId?: string;
+  mainIngredientId?: string;
+  mealTypeId?: string;
+  sourceUrl?: string;
+  authorNote?: string;
+  viewCount: number;
+  favoriteCount: number;
+  lastSyncedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
 
+/** Compute display-ready total time in minutes. */
+export function getTotalTime(dish: Dish): number | null {
+  return (dish.totalTime ?? (dish.prepTime ?? 0) + (dish.cookTime ?? 0)) || null;
+}
+
 export interface Ingredient {
   id: string;
-  dishId: string;
+  recipeId: string;
+  ingredientId?: string;
   name: string;
-  amount: number | null;
-  unit: string | null;
+  amount?: number;
+  unit?: string;
+  note?: string;
   isOptional: boolean;
+  groupName?: string;
   sortOrder: number;
 }
 
 export interface Step {
   id: string;
-  dishId: string;
+  recipeId: string;
   stepNumber: number;
-  instruction: string;
-  imageUrl: string | null;
-  timerSecs: number | null;
-  tip: string | null;
+  title?: string;
+  description: string;
+  imageUrl?: string;
+  duration?: number; // seconds
+  sortOrder: number;
 }
 
 export interface DishDetail extends Dish {
   ingredients: Ingredient[];
   steps: Step[];
-}
-
-export interface DishListResponse {
-  dishes: Dish[];
-  total: number;
-  page: number;
-  pageSize: number;
+  tags: Tag[];
+  dishType?: Category;
+  region?: Category;
+  mainIngredient?: Category;
+  mealType?: Category;
 }
 
 export interface DishFilters {
-  category?: DishCategory;
-  difficulty?: number;
-  maxTime?: number;
-  tags?: string[];
-  dietary?: string[];
+  dishType?: string; // category UUID
+  region?: string;
+  mainIngredient?: string;
+  mealType?: string;
+  difficulty?: Difficulty;
+  maxCookTime?: number;
+  tags?: string; // comma-separated tag slugs
   search?: string;
   page?: number;
   pageSize?: number;

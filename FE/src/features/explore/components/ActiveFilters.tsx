@@ -1,36 +1,20 @@
 'use client';
 
 import { cn } from '@shared/lib/utils';
-import type { DishCategory, DishFilters } from '@features/dish';
+import type { Category, Difficulty, DishFilters } from '@features/dish';
 
 interface ActiveFiltersProps {
   filters: DishFilters;
   onRemove: (key: keyof DishFilters) => void;
   onClearAll: () => void;
+  categories?: Category[];
   className?: string;
 }
 
-const categoryLabels: Partial<Record<DishCategory, string>> = {
-  com: 'Cơm',
-  bun_pho: 'Bún/Phở',
-  lau: 'Lẩu',
-  xao: 'Xào',
-  nuong: 'Nướng',
-  chien: 'Chiên',
-  hap: 'Hấp',
-  soup: 'Canh/Súp',
-  salad: 'Salad',
-  do_uong: 'Đồ uống',
-  trang_mieng: 'Tráng miệng',
-  other: 'Khác',
-};
-
-const difficultyLabels: Record<number, string> = {
-  1: 'Rất dễ',
-  2: 'Dễ',
-  3: 'Trung bình',
-  4: 'Khó',
-  5: 'Rất khó',
+const difficultyLabels: Record<Difficulty, string> = {
+  EASY: 'Dễ',
+  MEDIUM: 'Trung bình',
+  HARD: 'Khó',
 };
 
 interface FilterChip {
@@ -38,35 +22,42 @@ interface FilterChip {
   label: string;
 }
 
-function getActiveChips(filters: DishFilters): FilterChip[] {
+function getActiveChips(filters: DishFilters, categories: Category[]): FilterChip[] {
   const chips: FilterChip[] = [];
 
-  if (filters.category) {
+  if (filters.dishType) {
+    const cat = categories.find((c) => c.id === filters.dishType);
     chips.push({
-      key: 'category',
-      label: categoryLabels[filters.category] ?? String(filters.category),
+      key: 'dishType',
+      label: cat?.name ?? 'Loại món',
     });
   }
 
-  if (filters.difficulty !== undefined) {
+  if (filters.difficulty) {
     chips.push({
       key: 'difficulty',
-      label: difficultyLabels[filters.difficulty] ?? `Độ khó ${filters.difficulty}`,
+      label: difficultyLabels[filters.difficulty] ?? filters.difficulty,
     });
   }
 
-  if (filters.maxTime !== undefined) {
+  if (filters.maxCookTime !== undefined) {
     chips.push({
-      key: 'maxTime',
-      label: `< ${filters.maxTime} phút`,
+      key: 'maxCookTime',
+      label: `< ${filters.maxCookTime} phút`,
     });
   }
 
   return chips;
 }
 
-export function ActiveFilters({ filters, onRemove, onClearAll, className }: ActiveFiltersProps) {
-  const chips = getActiveChips(filters);
+export function ActiveFilters({
+  filters,
+  onRemove,
+  onClearAll,
+  categories = [],
+  className,
+}: ActiveFiltersProps) {
+  const chips = getActiveChips(filters, categories);
 
   if (chips.length === 0) return null;
 

@@ -1,5 +1,6 @@
-import { cn, formatCurrency } from '@shared/lib/utils';
+import { cn } from '@shared/lib/utils';
 import { DishBadge } from '@features/dish';
+import { getTotalTime } from '@features/dish';
 import type { Dish } from '@features/dish';
 
 interface RecipeInfoProps {
@@ -8,20 +9,13 @@ interface RecipeInfoProps {
 }
 
 export function RecipeInfo({ dish, className }: RecipeInfoProps) {
-  const totalTime = (dish.prepTime ?? 0) + (dish.cookTime ?? 0);
-
-  const costRange =
-    dish.costMin !== null && dish.costMax !== null
-      ? `${formatCurrency(dish.costMin)}-${formatCurrency(dish.costMax)}`
-      : null;
+  const totalTime = getTotalTime(dish);
 
   return (
     <section className={cn('flex flex-wrap items-center gap-2 px-4 py-3', className)}>
-      {totalTime > 0 && <DishBadge type="time" value={totalTime} />}
-      <DishBadge type="difficulty" value={dish.difficulty} />
-      <DishBadge type="time" value={`${dish.servings} phần`} />
-      {costRange !== null && <DishBadge type="cost" value={costRange} />}
-      {dish.spiceLevel > 0 && <DishBadge type="spice" value={dish.spiceLevel} />}
+      {totalTime !== null && <DishBadge type="time" value={totalTime} />}
+      {dish.difficulty && <DishBadge type="difficulty" value={dish.difficulty} />}
+      {dish.servings && <DishBadge type="servings" value={dish.servings} />}
     </section>
   );
 }

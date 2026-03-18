@@ -30,9 +30,7 @@ export function RankVote({ dishes, onComplete, timeRemaining }: RankVoteProps) {
         <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
           Sắp xếp theo thứ tự yêu thích
         </h3>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Kéo thả để thay đổi vị trí
-        </p>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Kéo thả để thay đổi vị trí</p>
         {timeRemaining !== undefined && (
           <p className="mt-1 text-xs text-gray-400">Còn {timeRemaining}s</p>
         )}

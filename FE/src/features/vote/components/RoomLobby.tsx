@@ -86,9 +86,7 @@ export function RoomLobby({
         >
           {roomCode}
         </button>
-        {copied && (
-          <p className="mt-1 text-xs text-green-600 dark:text-green-400">Đã sao chép!</p>
-        )}
+        {copied && <p className="mt-1 text-xs text-green-600 dark:text-green-400">Đã sao chép!</p>}
       </motion.div>
 
       {/* Room info */}
@@ -160,9 +158,7 @@ export function RoomLobby({
       )}
 
       {!isHost && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Đang chờ chủ phòng bắt đầu...
-        </p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Đang chờ chủ phòng bắt đầu...</p>
       )}
     </div>
   );

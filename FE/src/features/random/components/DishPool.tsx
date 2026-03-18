@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { apiClient } from '@shared/lib/api-client';
 import { DishCard } from '@features/dish';
-import type { Dish, DishListResponse } from '@features/dish/types';
+import type { Dish } from '@features/dish/types';
 import { Skeleton } from '@shared/ui';
 import type { RandomFilters } from '../types';
 
@@ -30,12 +30,12 @@ const staggerItem = {
 
 function buildQuery(filters: RandomFilters): string {
   const params = new URLSearchParams();
-  if (filters.category) params.set('category', filters.category);
-  if (filters.difficulty) params.set('difficulty', String(filters.difficulty));
-  if (filters.maxTime) params.set('maxTime', String(filters.maxTime));
+  if (filters.dishType) params.set('dish_type', filters.dishType);
+  if (filters.difficulty) params.set('difficulty', filters.difficulty);
+  if (filters.maxCookTime) params.set('max_cook_time', String(filters.maxCookTime));
   params.set('pageSize', '50');
   const qs = params.toString();
-  return `/api/dishes${qs ? `?${qs}` : ''}`;
+  return `/api/v1/recipes${qs ? `?${qs}` : ''}`;
 }
 
 export function DishPool({ filters, className }: DishPoolProps) {
@@ -47,10 +47,10 @@ export function DishPool({ filters, className }: DishPoolProps) {
     setLoading(true);
 
     apiClient
-      .get<DishListResponse>(buildQuery(filters))
+      .getList<Dish>(buildQuery(filters))
       .then((res) => {
         if (!cancelled) {
-          setDishes(res.dishes);
+          setDishes(res.data);
           setLoading(false);
         }
       })

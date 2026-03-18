@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 interface UseServingScaleReturn {
   servings: number;
   setServings: (value: number) => void;
-  scaleAmount: (amount: number | null) => number | null;
+  scaleAmount: (amount: number | null | undefined) => number | null;
 }
 
 const MIN_SERVINGS = 1;
@@ -19,8 +19,8 @@ export function useServingScale(originalServings: number): UseServingScaleReturn
   }, []);
 
   const scaleAmount = useCallback(
-    (amount: number | null): number | null => {
-      if (amount === null) return null;
+    (amount: number | null | undefined): number | null => {
+      if (amount === null || amount === undefined) return null;
       const scaled = (amount * servings) / originalServings;
       return Math.round(scaled * 10) / 10;
     },

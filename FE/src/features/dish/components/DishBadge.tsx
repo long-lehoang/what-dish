@@ -3,7 +3,7 @@
 import { Badge } from '@shared/ui';
 import { cn } from '@shared/lib/utils';
 
-type DishBadgeType = 'time' | 'cost' | 'difficulty' | 'spice';
+type DishBadgeType = 'time' | 'cost' | 'difficulty' | 'servings';
 
 interface DishBadgeProps {
   type: DishBadgeType;
@@ -30,18 +30,28 @@ function formatCost(value: number | string | null): string | null {
 
 function formatDifficulty(value: number | string | null): string | null {
   if (value === null) return null;
-  const num = typeof value === 'string' ? parseInt(value, 10) : value;
-  if (isNaN(num)) return null;
-  if (num <= 2) return 'Dễ';
-  if (num <= 3) return 'TB';
+  if (typeof value === 'string') {
+    switch (value) {
+      case 'EASY':
+        return 'Dễ';
+      case 'MEDIUM':
+        return 'TB';
+      case 'HARD':
+        return 'Khó';
+      default:
+        return value;
+    }
+  }
+  if (value <= 2) return 'Dễ';
+  if (value <= 3) return 'TB';
   return 'Khó';
 }
 
-function formatSpice(value: number | string | null): string | null {
+function formatServings(value: number | string | null): string | null {
   if (value === null) return null;
   const num = typeof value === 'string' ? parseInt(value, 10) : value;
-  if (isNaN(num) || num === 0) return null;
-  return '\uD83C\uDF36\uFE0F'.repeat(num);
+  if (isNaN(num) || num <= 0) return null;
+  return `${num} phần`;
 }
 
 const BADGE_CONFIG: Record<
@@ -59,7 +69,7 @@ const BADGE_CONFIG: Record<
     format: formatDifficulty,
     variant: 'warning',
   },
-  spice: { icon: '', format: formatSpice, variant: 'default' },
+  servings: { icon: '\uD83C\uDF7D\uFE0F', format: formatServings, variant: 'default' },
 };
 
 export function DishBadge({ type, value, className }: DishBadgeProps) {

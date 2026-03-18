@@ -12,13 +12,26 @@ export class ApiError extends Error {
   }
 }
 
+export interface Pagination {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
 interface RequestOptions {
   headers?: Record<string, string>;
   signal?: AbortSignal;
 }
 
+export interface ListResponse<T> {
+  data: T[];
+  pagination: Pagination;
+}
+
 interface ApiClient {
   get<T>(path: string, options?: RequestOptions): Promise<T>;
+  getList<T>(path: string, options?: RequestOptions): Promise<ListResponse<T>>;
   post<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T>;
   put<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T>;
   delete<T>(path: string, options?: RequestOptions): Promise<T>;
@@ -33,6 +46,14 @@ function isServerError(status: number): boolean {
 
 async function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Unwrap BE response wrapper: { data: T } → T
+function unwrapData<T>(raw: unknown): T {
+  if (raw && typeof raw === 'object' && 'data' in raw) {
+    return (raw as { data: T }).data;
+  }
+  return raw as T;
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {
@@ -53,10 +74,11 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
   try {
     const errorBody = (await response.json()) as {
+      error?: string;
       message?: string;
       code?: string;
     };
-    errorMessage = errorBody.message ?? errorMessage;
+    errorMessage = errorBody.message ?? errorBody.error ?? errorMessage;
     errorCode = errorBody.code;
   } catch {
     // Body is not JSON — use statusText
@@ -121,17 +143,8 @@ async function fetchWithRetry<T>(url: string, init: RequestInit, body?: unknown)
   throw lastError;
 }
 
-function getBaseUrl(configuredUrl: string): string {
-  // On the server, always use the configured URL directly
-  if (typeof window === 'undefined') {
-    return configuredUrl;
-  }
-  // On the client, use the public URL from env
-  return configuredUrl;
-}
-
 export function createApiClient(baseUrl: string): ApiClient {
-  const resolvedBaseUrl = getBaseUrl(baseUrl);
+  const resolvedBaseUrl = baseUrl;
 
   function buildHeaders(customHeaders?: Record<string, string>): Record<string, string> {
     return {
@@ -142,8 +155,23 @@ export function createApiClient(baseUrl: string): ApiClient {
   }
 
   return {
+    // Single-item responses: auto-unwraps { data: T } → T
     async get<T>(path: string, options?: RequestOptions): Promise<T> {
-      return fetchWithRetry<T>(
+      const raw = await fetchWithRetry<unknown>(
+        `${resolvedBaseUrl}${path}`,
+        {
+          method: 'GET',
+          headers: buildHeaders(options?.headers),
+          signal: options?.signal,
+        },
+        undefined,
+      );
+      return unwrapData<T>(raw);
+    },
+
+    // List responses: returns { data: T[], pagination }
+    async getList<T>(path: string, options?: RequestOptions): Promise<ListResponse<T>> {
+      return fetchWithRetry<ListResponse<T>>(
         `${resolvedBaseUrl}${path}`,
         {
           method: 'GET',
@@ -155,7 +183,7 @@ export function createApiClient(baseUrl: string): ApiClient {
     },
 
     async post<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T> {
-      return fetchWithRetry<T>(
+      const raw = await fetchWithRetry<unknown>(
         `${resolvedBaseUrl}${path}`,
         {
           method: 'POST',
@@ -165,10 +193,11 @@ export function createApiClient(baseUrl: string): ApiClient {
         },
         body,
       );
+      return unwrapData<T>(raw);
     },
 
     async put<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T> {
-      return fetchWithRetry<T>(
+      const raw = await fetchWithRetry<unknown>(
         `${resolvedBaseUrl}${path}`,
         {
           method: 'PUT',
@@ -178,10 +207,11 @@ export function createApiClient(baseUrl: string): ApiClient {
         },
         body,
       );
+      return unwrapData<T>(raw);
     },
 
     async delete<T>(path: string, options?: RequestOptions): Promise<T> {
-      return fetchWithRetry<T>(
+      const raw = await fetchWithRetry<unknown>(
         `${resolvedBaseUrl}${path}`,
         {
           method: 'DELETE',
@@ -190,6 +220,7 @@ export function createApiClient(baseUrl: string): ApiClient {
         },
         undefined,
       );
+      return unwrapData<T>(raw);
     },
   };
 }

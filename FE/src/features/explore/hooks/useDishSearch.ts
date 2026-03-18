@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiClient } from '@shared/lib/api-client';
 import { useDebounce } from '@shared/hooks';
-import type { Dish, DishFilters, DishListResponse } from '@features/dish';
+import type { Dish, DishFilters } from '@features/dish';
 
 interface UseDishSearchReturn {
   dishes: Dish[];
@@ -48,37 +48,44 @@ export function useDishSearch(
 
       try {
         const params = new URLSearchParams();
-        if (debouncedSearch) params.set('search', debouncedSearch);
-        if (filters.category) params.set('category', String(filters.category));
-        if (filters.difficulty !== undefined) params.set('difficulty', String(filters.difficulty));
-        if (filters.maxTime !== undefined) params.set('maxTime', String(filters.maxTime));
-        if (filters.tags?.length) params.set('tags', filters.tags.join(','));
+        if (filters.dishType) params.set('dish_type', filters.dishType);
+        if (filters.difficulty) params.set('difficulty', filters.difficulty);
+        if (filters.maxCookTime !== undefined)
+          params.set('max_cook_time', String(filters.maxCookTime));
+        if (filters.tags) params.set('tags', filters.tags);
         params.set('page', String(currentPage));
         params.set('pageSize', String(PAGE_SIZE));
 
-        const data = await apiClient.get<DishListResponse>(`/api/dishes?${params.toString()}`, {
+        // Use search endpoint when search query is present
+        let path: string;
+        if (debouncedSearch) {
+          params.set('q', debouncedSearch);
+          path = `/api/v1/recipes/search?${params.toString()}`;
+        } else {
+          path = `/api/v1/recipes?${params.toString()}`;
+        }
+
+        const result = await apiClient.getList<Dish>(path, {
           signal: controller.signal,
         });
 
         if (append) {
-          setDishes((prev) => [...prev, ...data.dishes]);
+          setDishes((prev) => [...prev, ...result.data]);
         } else {
-          setDishes(data.dishes);
+          setDishes(result.data);
         }
 
-        setHasMore(data.dishes.length === PAGE_SIZE && data.total > currentPage * PAGE_SIZE);
+        setHasMore(
+          result.data.length === PAGE_SIZE && result.pagination.total > currentPage * PAGE_SIZE,
+        );
       } catch (err) {
         if (err instanceof DOMException && err.name === 'AbortError') return;
-        setError(
-          err instanceof Error
-            ? err.message
-            : 'Không thể tải danh sách món ăn',
-        );
+        setError(err instanceof Error ? err.message : 'Không thể tải danh sách món ăn');
       } finally {
         setIsLoading(false);
       }
     },
-    [debouncedSearch, filters.category, filters.difficulty, filters.maxTime, filters.tags],
+    [debouncedSearch, filters.dishType, filters.difficulty, filters.maxCookTime, filters.tags],
   );
 
   // Reset and fetch on filter change

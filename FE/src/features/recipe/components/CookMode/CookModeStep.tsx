@@ -41,16 +41,10 @@ export function CookModeStep() {
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           className="max-w-lg text-center"
         >
+          {step.title && <p className="mb-2 text-lg font-semibold text-gray-300">{step.title}</p>}
           <p className="text-2xl font-medium leading-relaxed text-white md:text-3xl">
-            {step.instruction}
+            {step.description}
           </p>
-
-          {step.tip && (
-            <p className="mt-6 rounded-xl bg-amber-500/10 px-4 py-3 text-base text-amber-300">
-              <span aria-hidden="true">&#x1F4A1; </span>
-              Mẹo: {step.tip}
-            </p>
-          )}
         </motion.div>
       </AnimatePresence>
     </div>

@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@shared/lib/utils';
 import { Button } from '@shared/ui';
 import { REROLL_EXHAUSTED_MESSAGE } from '@shared/constants';
+import { apiClient } from '@shared/lib/api-client';
+import type { Category } from '@features/dish/types';
 import type { RandomFilters } from '../types';
 import { useShuffle } from '../hooks/useShuffle';
 import { useRerollLimit } from '../hooks/useRerollLimit';
@@ -19,8 +21,18 @@ interface CardShuffleProps {
 
 export function CardShuffle({ className }: CardShuffleProps) {
   const [filters, setFilters] = useState<RandomFilters>({});
+  const [categories, setCategories] = useState<Category[]>([]);
   const { phase, selectedDish, triggerShuffle, reset, isAnimating } = useShuffle();
   const { canReroll, incrementReroll, resetRerolls } = useRerollLimit();
+
+  useEffect(() => {
+    apiClient
+      .get<Category[]>('/api/v1/categories')
+      .then(setCategories)
+      .catch(() => {
+        // Categories are non-critical — UI still works without them
+      });
+  }, []);
 
   const handleShuffle = useCallback(() => {
     if (isAnimating) return;
@@ -122,7 +134,12 @@ export function CardShuffle({ className }: CardShuffleProps) {
       </section>
 
       {/* Filter bar */}
-      <FilterBar filters={filters} onFilterChange={setFilters} className="px-4 pb-4" />
+      <FilterBar
+        filters={filters}
+        onFilterChange={setFilters}
+        categories={categories}
+        className="px-4 pb-4"
+      />
 
       {/* Dish pool grid */}
       <DishPool filters={filters} className="px-4 pb-8" />

@@ -1,8 +1,6 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@shared/lib/utils';
 import type { Step } from '@features/dish';
 
@@ -13,8 +11,7 @@ interface StepCardProps {
 }
 
 export function StepCard({ step, isActive, className }: StepCardProps) {
-  const [showTip, setShowTip] = useState(false);
-  const timerMinutes = step.timerSecs !== null ? Math.ceil(step.timerSecs / 60) : null;
+  const timerMinutes = step.duration ? Math.ceil(step.duration / 60) : null;
 
   return (
     <div
@@ -35,9 +32,16 @@ export function StepCard({ step, isActive, className }: StepCardProps) {
         >
           {step.stepNumber}
         </span>
-        <p className="flex-1 text-sm leading-relaxed text-gray-800 dark:text-gray-200">
-          {step.instruction}
-        </p>
+        <div className="flex-1">
+          {step.title && (
+            <h4 className="mb-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+              {step.title}
+            </h4>
+          )}
+          <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-200">
+            {step.description}
+          </p>
+        </div>
       </div>
 
       {step.imageUrl && (
@@ -54,7 +58,7 @@ export function StepCard({ step, isActive, className }: StepCardProps) {
 
       {timerMinutes !== null && (
         <button
-          className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+          className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
           aria-label={`Hẹn giờ ${timerMinutes} phút`}
         >
           <svg
@@ -73,34 +77,6 @@ export function StepCard({ step, isActive, className }: StepCardProps) {
           </svg>
           Hẹn giờ {timerMinutes} phút
         </button>
-      )}
-
-      {step.tip !== null && (
-        <div>
-          <button
-            onClick={() => setShowTip((prev) => !prev)}
-            className="text-xs font-medium text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400"
-            aria-expanded={showTip}
-          >
-            {showTip ? '▲ Ẩn mẹo' : '▼ Xem mẹo'}
-          </button>
-          <AnimatePresence>
-            {showTip && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <p className="mt-2 rounded-lg bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
-                  <span aria-hidden="true">&#x1F4A1; </span>
-                  Mẹo: {step.tip}
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
       )}
     </div>
   );

@@ -1,0 +1,90 @@
+name: BE CI
+
+on:
+  push:
+    branches: [main]
+    paths: [BE/**]
+  pull_request:
+    branches: [main]
+    paths: [BE/**]
+
+defaults:
+  run:
+    working-directory: BE
+
+jobs:
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE/go.mod
+          cache-dependency-path: BE/go.sum
+
+      - name: Format check
+        run: make fmt-check
+
+      - name: Vet
+        run: make vet
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          working-directory: BE
+
+  test:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE/go.mod
+          cache-dependency-path: BE/go.sum
+
+      - name: Unit tests
+        run: make test
+
+      - name: Integration tests
+        run: make test-integration
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE/go.mod
+          cache-dependency-path: BE/go.sum
+
+      - name: Build binary
+        run: make build
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE/go.mod
+          cache-dependency-path: BE/go.sum
+
+      - name: Start services
+        run: docker compose up -d --build --wait
+        timeout-minutes: 5
+
+      - name: Run E2E tests
+        run: make test-e2e
+
+      - name: Docker logs (on failure)
+        if: failure()
+        run: docker compose logs app
